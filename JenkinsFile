@@ -1,0 +1,40 @@
+pipeline {
+    agent any;
+    options{
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+    environment { //环境变量
+		GREETING="Hello";
+    }
+    stages{
+        stage('stage 1') {
+            steps{
+            	sh 'echo "$GREETING $TITLE"'
+            }
+        }
+        stage('Test') {
+              steps {
+                sh '''
+                 set +x
+                 ./ci/run-test.sh
+                 '''
+              }
+            }
+        stage('login') {
+            steps {
+                sh 'https://github.com/Violet-Pz/pipeline-demo/blob/main/jenkins/login.sh'
+            }
+        }
+   }
+   post { //构建完成后置操作
+        aborted { //如果构建中断，则执行
+            echo ' build aborted!'
+        }
+        success { //构建成功执行
+            echo 'build successed!'
+        }
+       failure { //构建失败执行
+           echo 'build failed!'
+       }
+    }
+}
